@@ -5,9 +5,10 @@
  * @format
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  PermissionsAndroid,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -24,6 +25,9 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+
+import UUID from 'react-native-uuid';
+import RNCallKeep from 'react-native-callkeep';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -61,6 +65,38 @@ function App(): React.JSX.Element {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+  useEffect(() => {
+    uuid = UUID.v4();
+    console.log('[uuid]', uuid);
+    // RNCallKeep.
+    const options = {
+      ios: {
+        appName: 'My app name',
+      },
+      android: {
+        alertTitle: 'Permissions required',
+        alertDescription: 'This application needs to access your phone accounts',
+        cancelButton: 'Cancel',
+        okButton: 'ok',
+        imageName: 'phone_account_icon',
+        additionalPermissions: [PermissionsAndroid.PERMISSIONS.CALL_PHONE],
+        // Required to get audio in background when using Android 11
+        foregroundService: {
+          channelId: 'com.company.my',
+          channelName: 'Foreground service for my app',
+          notificationTitle: 'My app is running on background',
+          notificationIcon: 'Path to the resource icon of the notification',
+        }, 
+      }
+    };
+    RNCallKeep.setup(options).then(accepted => {});
+    setTimeout(() => {
+      RNCallKeep.displayIncomingCall(uuid, "TEST CALLKEEP", "TEST NURSE", 'number', false);
+      console.log('[displayIncomingCall]');
+    }, 5000);
+  }, [])
+
+  let uuid: string = ''
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -76,20 +112,11 @@ function App(): React.JSX.Element {
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
           }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
+          <Section title={"UUID : " + uuid}>
+            {/* Read the docs to discover what to do next: */}
+            {uuid}
           </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+          <View style={{marginBottom: 20}} />
         </View>
       </ScrollView>
     </SafeAreaView>
