@@ -76,6 +76,7 @@
                         fromPushKit: YES
                             payload: extra
               withCompletionHandler: completion];
+              completion();
 }
 
 @end
