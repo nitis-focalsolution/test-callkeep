@@ -90,9 +90,10 @@ function App(): React.JSX.Element {
       }
     };
     RNCallKeep.setup(options).then(accepted => {});
+    RNCallKeep.displayIncomingCall(uuid, "TEST CALLKEEP", "TEST NURSE", 'number', false);
+    console.log('[displayIncomingCall]');
     setTimeout(() => {
-      RNCallKeep.displayIncomingCall(uuid, "TEST CALLKEEP", "TEST NURSE", 'number', false);
-      console.log('[displayIncomingCall]');
+      RNCallKeep.endAllCalls();
     }, 5000);
   }, [])
 
