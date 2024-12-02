@@ -5,7 +5,7 @@
  * @format
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   PermissionsAndroid,
@@ -14,17 +14,23 @@ import {
   StatusBar,
   StyleSheet,
   Text,
+  TouchableOpacity,
   useColorScheme,
   View,
+  Button,
+  EmitterSubscription,
 } from 'react-native';
 
+import { Colors, Header } from 'react-native/Libraries/NewAppScreen';
+
 import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  EventType,
+  VideoAspect,
+  ZoomVideoSdkProvider,
+  ZoomVideoSdkUser,
+  ZoomView,
+  useZoom,
+} from "@zoom/react-native-videosdk";
 
 import UUID from 'react-native-uuid';
 import RNCallKeep from 'react-native-callkeep';
@@ -66,9 +72,6 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
   useEffect(() => {
-    uuid = UUID.v4();
-    console.log('[uuid]', uuid);
-    // RNCallKeep.
     const options = {
       ios: {
         appName: 'My app name',
@@ -90,14 +93,19 @@ function App(): React.JSX.Element {
       }
     };
     RNCallKeep.setup(options).then(accepted => {});
+  }, [])
+
+  const incomingcall = () => {
+    setUuid(UUID.v4());
+    console.log('[uuid]', uuid);
     RNCallKeep.displayIncomingCall(uuid, "TEST CALLKEEP", "TEST NURSE", 'number', false);
     console.log('[displayIncomingCall]');
     setTimeout(() => {
       RNCallKeep.endAllCalls();
     }, 5000);
-  }, [])
-
-  let uuid: string = ''
+  }
+  const [uuid, setUuid] = useState('');
+  const [zoom, setZoom] = useState(false);
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -119,10 +127,114 @@ function App(): React.JSX.Element {
           </Section>
           <View style={{marginBottom: 20}} />
         </View>
+        <View style={{flexDirection: "row", justifyContent: 'space-around'}}>
+          <TouchableOpacity
+            style={{height: 60, width: 60, justifyContent: "center",}}
+            onPress={incomingcall}
+          >
+            <Text>test incoming</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{height: 60, width: 60, justifyContent: "center",}}
+            onPress={()=> {}}
+          >
+            <Text>test zoom</Text>
+          </TouchableOpacity>
+        </View>
+        {
+          zoom ? (
+            <ZoomVideoSdkProvider config={{ appGroupId: "test", domain: "zoom.us", enableLog: true }}>
+              <SafeAreaView style={styles.safe}>
+                <Call />
+              </SafeAreaView>
+            </ZoomVideoSdkProvider>
+          ) : null
+        }
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const Call = () => {
+  const zoom = useZoom();
+  const listeners = useRef<EmitterSubscription[]>([]);
+  const [users, setUsersInSession] = useState<ZoomVideoSdkUser[]>([]);
+  const [isInSession, setIsInSession] = useState(false);
+  const [isAudioMuted, setIsAudioMuted] = useState(true);
+  const [isVideoMuted, setIsVideoMuted] = useState(true);
+
+  const join = async () => {
+    /* Disclaimer: JWT should be generated from your server */
+
+    const sessionLeave = zoom.addListener(EventType.onSessionLeave, () => {
+      setIsInSession(false);
+      setUsersInSession([]);
+      sessionLeave.remove();
+    });
+
+    await zoom
+      .joinSession({
+        sessionName: 'config.sessionName',
+        sessionPassword: 'config.sessionPassword',
+        token: 'token',
+        userName: 'uname',
+        audioOptions: { connect: true, mute: true, autoAdjustSpeakerVolume: false },
+        videoOptions: { localVideoOn: true },
+        sessionIdleTimeoutMins: 10,
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
+
+  const leaveSession = () => {
+    zoom.leaveSession(false);
+    setIsInSession(false);
+    listeners.current.forEach((listener) => listener.remove());
+    listeners.current = [];
+  };
+
+  return (
+    <View style={styles.container}>
+      {users.map((user) => (
+        <View style={styles.container} key={user.userId}>
+          <ZoomView
+            style={styles.container}
+            userId={user.userId}
+            fullScreen
+            videoAspect={VideoAspect.PanAndScan}
+          />
+        </View>
+      ))}
+      <MuteButtons isAudioMuted={isAudioMuted} isVideoMuted={isVideoMuted} />
+      <Button title="Leave Session" color={"#f01040"} onPress={leaveSession} />
+    </View>
+  )
+};
+
+const MuteButtons = ({ isAudioMuted, isVideoMuted }: { isAudioMuted: boolean; isVideoMuted: boolean }) => {
+  const zoom = useZoom();
+  const onPressAudio = async () => {
+    const mySelf = await zoom.session.getMySelf();
+    const muted = await mySelf.audioStatus.isMuted();
+    muted
+      ? await zoom.audioHelper.unmuteAudio(mySelf.userId)
+      : await zoom.audioHelper.muteAudio(mySelf.userId);
+  };
+
+  const onPressVideo = async () => {
+    const mySelf = await zoom.session.getMySelf();
+    const videoOn = await mySelf.videoStatus.isOn();
+    videoOn ? await zoom.videoHelper.stopVideo() : await zoom.videoHelper.startVideo();
+  };
+  return (
+    <View style={styles.buttonHolder}>
+      <Button title={isAudioMuted ? "Unmute Audio" : "Mute Audio"} onPress={onPressAudio} />
+      <View style={styles.spacer} />
+      <Button title={isVideoMuted ? "Unmute Video" : "Mute Video"} onPress={onPressVideo} />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   sectionContainer: {
@@ -140,6 +252,29 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontWeight: '700',
+  },
+  safe: {
+    width: '90%',
+    alignSelf: 'center',
+    margin: 16,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  container: {
+    width: '100%',
+    alignSelf: 'center',
+    height: '100%',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  spacer: {
+    height: 16,
+    width: 8,
+  },
+  buttonHolder: {
+    flexDirection: "row",
+    justifyContent: "center",
+    margin: 8
   },
 });
 
