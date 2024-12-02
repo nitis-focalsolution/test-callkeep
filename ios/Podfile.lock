@@ -886,6 +886,12 @@ PODS:
   - React-Mapbuffer (0.73.1):
     - glog
     - React-debug
+  - react-native-zoom-video-sdk (1.12.10):
+    - React-Core
+    - ZoomVideoSDK/CptShare (= 1.12.10)
+    - ZoomVideoSDK/zm_annoter_dynamic (= 1.12.10)
+    - ZoomVideoSDK/zoomcml (= 1.12.10)
+    - ZoomVideoSDK/ZoomVideoSDK (= 1.12.10)
   - React-nativeconfig (0.73.1)
   - React-NativeModulesApple (0.73.1):
     - glog
@@ -1059,6 +1065,10 @@ PODS:
     - React-Core
   - SocketRocket (0.6.1)
   - Yoga (1.14.0)
+  - ZoomVideoSDK/CptShare (1.12.10)
+  - ZoomVideoSDK/zm_annoter_dynamic (1.12.10)
+  - ZoomVideoSDK/zoomcml (1.12.10)
+  - ZoomVideoSDK/ZoomVideoSDK (1.12.10)
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
@@ -1091,6 +1101,7 @@ DEPENDENCIES:
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector-modern`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
+  - "react-native-zoom-video-sdk (from `../node_modules/@zoom/react-native-videosdk`)"
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -1120,6 +1131,7 @@ SPEC REPOS:
     - fmt
     - libevent
     - SocketRocket
+    - ZoomVideoSDK
 
 EXTERNAL SOURCES:
   boost:
@@ -1177,6 +1189,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/logger"
   React-Mapbuffer:
     :path: "../node_modules/react-native/ReactCommon"
+  react-native-zoom-video-sdk:
+    :path: "../node_modules/@zoom/react-native-videosdk"
   React-nativeconfig:
     :path: "../node_modules/react-native/ReactCommon"
   React-NativeModulesApple:
@@ -1254,6 +1268,7 @@ SPEC CHECKSUMS:
   React-jsinspector: 369048694e39942063c5d08e9580b43e2edd379a
   React-logger: e0c1e918d9588a9f39c9bc62d9d6bfe9ca238d9d
   React-Mapbuffer: 9731a0a63ebaf8976014623c4d637744d7353a7c
+  react-native-zoom-video-sdk: 8b803d580feb496428cd99e1ed743e0f23eafe98
   React-nativeconfig: 37aecd26d64b79327c3f10e43b2e9a6c425e0a60
   React-NativeModulesApple: 9ca6d2eaa1dd5606588262195b46d0774bdec83a
   React-perflogger: 5ffc4d6ccb74eaac7b8b2867e58a447232483d6d
@@ -1278,6 +1293,7 @@ SPEC CHECKSUMS:
   RNVoipPushNotification: 543e18f83089134a35e7f1d2eba4c8b1f7776b08
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 4f53dc50008d626fa679c7a1cb4bed898f8c0bde
+  ZoomVideoSDK: 4ad13d8828d2af3d3fb0b742ef68c0f71d22e85c
 
 PODFILE CHECKSUM: 5a2a5f58dae25c61b82851934e428a433b02caa6
 
